@@ -27,10 +27,20 @@ class Synth:
 class Utterance:
     def __init__(self, phrase):
         print(f'Making utterance to synthesise phrase: {phrase}')  # just a hint - can be deleted
-        pass  # delete this and implement
+        # pass  # delete this and implement
+        self.phrase = phrase
 
     def get_phone_seq(self):
-        pass  # delete this line and implement
+        # pass  # delete this line and implement
+        phone_seq = re.sub(r'[^\w\s]', '', self.phrase.lower())
+        print("normalise the text: ", phone_seq) #TODO: need a exception character
+        prondict = cmudict.dict()
+        print(prondict[phone_seq])
+        for each in prondict[phone_seq]:
+            each.insert(0,'PAU')
+            each.append('PAU')
+        print(prondict[phone_seq])
+        return prondict[phone_seq]
 
 
 # NOTE: DO NOT CHANGE ANY OF THE ARGPARSE ARGUMENTS - CHANGE NOTHING IN THIS FUNCTION
@@ -73,6 +83,7 @@ if __name__ == "__main__":
 
     utt = Utterance(phrase=args.phrase)
     phone_seq = utt.get_phone_seq()
+
 
     print(f'Will load wavs from: {args.diphones}')  # just a clue - can be deleted
     diphone_synth = Synth(wav_folder=args.diphones)

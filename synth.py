@@ -20,6 +20,7 @@ class Synth:
 
         for wav_file in all_diphone_wav_files:
             pass  # delete this line and implement
+           # if wav_file in diphone_seq:
 
         return diphones
 
@@ -31,16 +32,37 @@ class Utterance:
         self.phrase = phrase
 
     def get_phone_seq(self):
-        # pass  # delete this line and implement
-        phone_seq = re.sub(r'[^\w\s]', '', self.phrase.lower())
-        print("normalise the text: ", phone_seq) #TODO: need a exception character
+        # 1.1-normalise the text (convert to the lower case and remove punctuation)
+        word_seq = re.sub(r'[^\w\s]', '', self.phrase.lower())
+        print("normalise the text: ", word_seq) #TODO: need a exception character
+        #TODO a word is not in the cmudict, print an informative message for the user and exit
+
+        # 1.2-expand the word sequence to a phone sequence
         prondict = cmudict.dict()
-        print(prondict[phone_seq])
-        for each in prondict[phone_seq]:
-            each.insert(0,'PAU')
-            each.append('PAU')
-        print(prondict[phone_seq])
-        return prondict[phone_seq]
+        phone_seq = prondict[word_seq][0] # choose one pron from the multiple pronunciations
+        print(phone_seq)
+        phone_seq_pron = [re.sub(r'\d+', "", i) for i in phone_seq] # remove all digits in the phone sequence
+        # method 2 to remove all digits from a list of strings
+        # phone_seq_pron=[]
+        # for i in phone_seq1:
+        #     i = re.sub("\d+", "", i)
+        #     phone_seq_pron.append(i)
+        # print(phone_seq_pron)
+        print(phone_seq_pron)
+        phone_seq_pron.insert(0, 'PAU')
+        phone_seq_pron.append('PAU')
+        print(phone_seq_pron)
+
+        # 1.3-expand the phone sequence to the corresponding diphone sequence
+        diphone_seq = [(phone_seq_pron[i] + '-' + phone_seq_pron[i + 1]) for i in range(0, len(phone_seq_pron)-1, 1)]
+        # method 2 to expand the corresponding diphone sequence
+        # diphone_seq = []
+        # for i in range(0, len(phone_seq_pron)-1,1):
+        #     n = phone_seq_pron[i] + '-' + phone_seq_pron[i+1]
+        #     diphone_seq.append(n)
+        print(diphone_seq)
+
+        return diphone_seq
 
 
 # NOTE: DO NOT CHANGE ANY OF THE ARGPARSE ARGUMENTS - CHANGE NOTHING IN THIS FUNCTION
@@ -82,7 +104,8 @@ if __name__ == "__main__":
     args = process_commandline()
 
     utt = Utterance(phrase=args.phrase)
-    phone_seq = utt.get_phone_seq()
+    #phone_seq = utt.get_phone_seq()
+    diphone_seq = utt.get_phone_seq()
 
 
     print(f'Will load wavs from: {args.diphones}')  # just a clue - can be deleted

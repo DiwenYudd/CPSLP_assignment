@@ -2,7 +2,9 @@ from pathlib import Path
 import simpleaudio
 import argparse
 from nltk.corpus import cmudict
+from pydub import AudioSegment
 import re
+import glob
 
 # import numpy
 # import datetime
@@ -14,15 +16,47 @@ class Synth:
         self.diphones = self.load_diphone_data(wav_folder)
 
     def load_diphone_data(self, wav_folder):
-
+        list = []
+        playlist = AudioSegment.empty()
         diphones = {}
         all_diphone_wav_files = (str(item) for item in Path(wav_folder).glob('*.wav') if item.is_file())
 
-        for wav_file in all_diphone_wav_files:
-            pass  # delete this line and implement
-           # if wav_file in diphone_seq:
+        for diphone_wav_files in all_diphone_wav_files:
+            diphone = re.search(r'(.+/)(.+?)\.', diphone_wav_files).group(2)
+            diphones[diphone.upper()] = diphone + '.wav'
 
-        return diphones
+        for element in utt.get_phone_seq():
+            for ke1 in diphones.keys():
+                if ke1 == element:
+                    list.append(diphones[ke1])
+        print(list)
+
+        for wav in list:
+            sound = AudioSegment.from_wav(str(Path(wav_folder)) + '/' + wav)
+            playlist += sound
+        print(playlist)
+
+        playlist.export("playlist.wav", format="wav")
+        new_audio = simpleaudio.Audio(rate=16000)
+        new_audio.load(playlist)
+        new_audio.play()
+        return playlist
+        # for wav_file in all_diphone_wav_files:
+        #     wav_file1 = wav_file.replace('.wav', '').replace(wav_folder, '')
+        # print(wav_file1)
+        #
+        # for i in all_diphone_wav:
+        #     for element in utt.get_phone_seq():
+        #         if element == i.upper():
+        #             list = list.append(i)
+        #             print(list)
+        #
+        # for wav in list:
+        #     sound = AudioSegment.from_wav(wav)
+        #     playlist += sound
+        #
+        # playlist.export("playlist.wav", format="wav")
+
 
 
 class Utterance:
@@ -33,7 +67,8 @@ class Utterance:
 
     def get_phone_seq(self):
         # 1.1-normalise the text (convert to the lower case and remove punctuation)
-        word_seq = re.sub(r'[^\w\s]', '', self.phrase.lower())
+        # word_seq = re.sub(r'[^\w\s]', '', self.phrase.lower())
+        word_seq = re.sub(r'[^A-Za-z+\'?A-Za-z+]', '', self.phrase.lower()) # TODO: regex need to rethink
         print("normalise the text: ", word_seq) #TODO: need a exception character
         #TODO a word is not in the cmudict, print an informative message for the user and exit
 
